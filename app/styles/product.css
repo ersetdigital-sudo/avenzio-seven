@@ -1,0 +1,197 @@
+/* ===== Redesign halaman produk PPOB =====
+   Produk digital (pulsa, token, tagihan) tidak punya foto, jadi kotak "gambar
+   produk" diganti hero card berisi identitas provider + harga + chip kepercayaan. */
+
+.pd-hero-wrap { margin-top: 2px }
+
+.pd-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 30px 32px 26px;
+  color: #fff;
+  background:
+    radial-gradient(520px 280px at 94% -34%, rgba(255, 208, 0, .24), transparent 62%),
+    radial-gradient(420px 260px at -8% 132%, rgba(255, 255, 255, .12), transparent 60%),
+    linear-gradient(140deg, #4A1044 0%, #3D0B37 46%, #2C0827 100%);
+  box-shadow: 0 26px 60px -34px rgba(61, 11, 55, .75);
+}
+
+/* dekorasi cincin */
+.pd-hero::after {
+  content: "";
+  position: absolute;
+  right: -78px;
+  top: -96px;
+  width: 268px;
+  height: 268px;
+  border: 34px solid rgba(255, 255, 255, .05);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.pd-hero-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.pd-id { display: flex; gap: 18px; align-items: flex-start; position: static; min-width: 0; flex: 1 1 380px }
+.pd-idtx { min-width: 0 }
+
+/* badge provider: tile warna provider di atas kartu putih agar kontras */
+.pd-logobadge {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 24px;
+  padding: 7px;
+  line-height: 0;
+  box-shadow: 0 20px 42px -22px rgba(0, 0, 0, .8);
+}
+.pd-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+
+.pd-idmeta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px }
+.pd-hero .apill {
+  background: rgba(255, 255, 255, .13);
+  border: 1px solid rgba(255, 255, 255, .18);
+  color: #FFD000;
+}
+.pd-provname {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .62);
+}
+
+.pd-hero h1 {
+  margin: 0;
+  font-size: clamp(24px, 3.4vw, 36px);
+  line-height: 1.12;
+  letter-spacing: -.03em;
+  font-weight: 800;
+  color: #fff;
+}
+.pd-hero .pd-desc {
+  margin-top: 10px;
+  max-width: 54ch;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, .74);
+}
+
+/* harga */
+.pd-hero .pd-price {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  text-align: right;
+}
+.pd-price small {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .55);
+}
+.pd-price b {
+  display: block;
+  font-size: clamp(30px, 4.4vw, 44px);
+  line-height: 1;
+  letter-spacing: -.035em;
+  font-weight: 800;
+  color: #FFD000;
+}
+.pd-price span {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, .6);
+}
+
+/* chip kepercayaan (menggantikan .pd-trust) */
+.pd-chips {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pd-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .16);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+}
+.pd-chips svg { width: 16px; height: 16px; color: #FFD000; flex-shrink: 0 }
+
+/* ===== grid di bawah hero ===== */
+.pd { grid-template-columns: 1.08fr .92fr; gap: 24px; margin-top: 24px; align-items: start }
+.pd-side { display: grid; gap: 18px; align-content: start }
+
+.pd-formhead {
+  margin-bottom: 2px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.pd-formhead h2 { margin: 0; font-size: 19px }
+.pd-formhead p { margin: 6px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted) }
+
+@media (min-width: 961px) {
+  .pd-buy { position: sticky; top: 96px }
+}
+
+@media (max-width: 960px) {
+  .pd { grid-template-columns: 1fr }
+  .pd-buy { position: static }
+}
+
+@media (max-width: 767px) {
+  .pd-hero { padding: 22px 20px 20px; border-radius: 20px }
+  .pd-hero-row { gap: 18px }
+  .pd-id { gap: 14px; flex: 1 1 100% }
+  .pd-logobadge { border-radius: 18px; padding: 5px }
+  .pd-logo { width: 50px; height: 50px; font-size: 14px; border-radius: 14px }
+  .pd-hero h1 { font-size: 24px }
+  .pd-hero .pd-desc { font-size: 14px; margin-top: 8px }
+  .pd-hero .pd-price { text-align: left; flex: 1 1 100%; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .14) }
+  .pd-price b { font-size: 32px }
+  .pd-chips { margin-top: 18px; gap: 6px }
+  .pd-chips li { padding: 8px 11px; font-size: 11.5px }
+  .pd-chips svg { width: 14px; height: 14px }
+  .pd { margin-top: 18px; gap: 14px }
+  .pd-side { gap: 14px }
+}
+
+@media (max-width: 400px) {
+  .pd-price b { font-size: 28px }
+  .pd-chips li:nth-child(3) { display: none }
+}
