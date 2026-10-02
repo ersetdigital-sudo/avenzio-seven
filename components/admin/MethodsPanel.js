@@ -69,22 +69,39 @@ export default function MethodsPanel() {
     setMsg('');
   }
 
+  const isQris = /qris/i.test(f.name || '');
+
   async function submit(e) {
     e.preventDefault();
     setErr('');
     if (!f.name.trim()) return setErr('Nama metode wajib diisi.');
+    if (isQris && f.active && !f.image.url) {
+      return setErr('Unggah foto QRIS dulu sebelum mengaktifkan QRIS.');
+    }
     setBusy('form');
     try {
-      const payload = {
-        name: f.name.trim(),
-        accountName: f.accountName,
-        accountNumber: f.accountNumber,
-        notes: f.notes,
-        image: f.image.url,
-        imageId: f.image.id,
-        active: f.active,
-        sort: Number(f.sort) || 0,
-      };
+      const payload = isQris
+        ? {
+            // QRIS: hanya nama, foto, status — tanpa data rekening.
+            name: f.name.trim(),
+            accountName: '',
+            accountNumber: '',
+            notes: f.notes,
+            image: f.image.url,
+            imageId: f.image.id,
+            active: f.active,
+            sort: 0,
+          }
+        : {
+            name: f.name.trim(),
+            accountName: f.accountName,
+            accountNumber: f.accountNumber,
+            notes: f.notes,
+            image: f.image.url,
+            imageId: f.image.id,
+            active: f.active,
+            sort: Number(f.sort) || 0,
+          };
       const isNew = editing === 'new';
       const res = await fetch(
         isNew ? '/api/payment-methods' : '/api/payment-methods/' + editing,
@@ -107,6 +124,11 @@ export default function MethodsPanel() {
   }
 
   async function toggle(m) {
+    const qris = /qris/i.test(m.name || '');
+    if (qris && !m.active && !m.image) {
+      setErr('Unggah foto QRIS dulu sebelum mengaktifkan QRIS.');
+      return;
+    }
     setBusy(m.id);
     setErr('');
     try {
@@ -162,84 +184,117 @@ export default function MethodsPanel() {
 
       {editing ? (
         <form className="av-card" onSubmit={submit}>
-          <h2>{editing === 'new' ? 'Metode baru' : 'Ubah metode'}</h2>
-          <p className="sub">Foto QRIS diupload ke Cloudinary dan ditampilkan optimal (f_auto,q_auto).</p>
-
-          <div className="av-row">
-            <div className="av-field">
-              <label className="av-lab" htmlFor="mName">
-                Nama metode
-              </label>
-              <input
-                className="av-in"
-                id="mName"
-                value={f.name}
-                onChange={(e) => set('name', e.target.value)}
-                placeholder="QRIS"
-              />
-            </div>
-            <div className="av-field">
-              <label className="av-lab" htmlFor="mSort">
-                Urutan
-              </label>
-              <input
-                className="av-in"
-                id="mSort"
-                inputMode="numeric"
-                value={String(f.sort)}
-                onChange={(e) => set('sort', e.target.value.replace(/\D/g, ''))}
-                placeholder="0"
-              />
-            </div>
-          </div>
-
-          <div className="av-row">
-            <div className="av-field">
-              <label className="av-lab" htmlFor="mAccName">
-                Nama pemilik rekening / merchant
-              </label>
-              <input
-                className="av-in"
-                id="mAccName"
-                value={f.accountName}
-                onChange={(e) => set('accountName', e.target.value)}
-                placeholder="Avenzio Seven"
-              />
-            </div>
-            <div className="av-field">
-              <label className="av-lab" htmlFor="mAccNum">
-                Nomor rekening / ID
-              </label>
-              <input
-                className="av-in"
-                id="mAccNum"
-                value={f.accountNumber}
-                onChange={(e) => set('accountNumber', e.target.value)}
-                placeholder="1234567890"
-              />
-            </div>
-          </div>
+          <h2>
+            {editing === 'new' ? (isQris ? 'QRIS baru' : 'Metode baru') : f.name || 'Ubah metode'}
+          </h2>
+          <p className="sub">
+            {isQris
+              ? 'Metode pembayaran QRIS — cukup nama, foto QR, dan status.'
+              : 'Isi detail rekening untuk metode transfer / bank.'}
+          </p>
 
           <div className="av-field">
-            <label className="av-lab" htmlFor="mNotes">
-              Catatan untuk pelanggan
+            <label className="av-lab" htmlFor="mName">
+              Nama metode
             </label>
-            <textarea
+            <input
               className="av-in"
-              id="mNotes"
-              value={f.notes}
-              onChange={(e) => set('notes', e.target.value)}
-              placeholder="Scan QR di bawah ini, lalu kirim bukti ke WhatsApp CS."
+              id="mName"
+              value={f.name}
+              onChange={(e) => set('name', e.target.value)}
+              placeholder={isQris ? 'QRIS' : 'Transfer Bank BCA'}
             />
           </div>
 
-          <ImageUpload
-            id="mImage"
-            label="Foto QRIS"
-            value={f.image}
-            onChange={(img) => set('image', img)}
-            hint="Upload gambar QRIS (JPG / PNG / WEBP, maks 2MB)."
-          />
+          {isQris ? (
+            <>
+              <div className="av-qris-card">
+                <div className="av-qris-head">
+                  <b>{f.name || 'QRIS'}</b>
+                  <span>Metode pembayaran QRIS</span>
+                </div>
+                <ImageUpload
+                  id="mImage"
+                  label="Foto QRIS"
+                  value={f.image}
+                  onChange={(img) => set('image', img)}
+                  hint="Upload gambar QRIS (JPG / PNG / WEBP, maks 2MB). QR tidak boleh terpotong."
+                />
+                <div className="av-qris-status">
+                  <span className={'ast ' + (f.active ? 'berhasil' : 'kedaluwarsa')}>
+                    {f.active ? 'Aktif' : 'Nonaktif'}
+                  </span>
+                  {f.active && !f.image.url ? (
+                    <span className="av-warn">Foto QRIS belum ada — QRIS tidak tampil di checkout.</span>
+                  ) : null}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="av-row">
+                <div className="av-field">
+                  <label className="av-lab" htmlFor="mSort">
+                    Urutan
+                  </label>
+                  <input
+                    className="av-in"
+                    id="mSort"
+                    inputMode="numeric"
+                    value={String(f.sort)}
+                    onChange={(e) => set('sort', e.target.value.replace(/\D/g, ''))}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="av-field">
+                  <label className="av-lab" htmlFor="mAccName">
+                    Nama pemilik rekening / merchant
+                  </label>
+                  <input
+                    className="av-in"
+                    id="mAccName"
+                    value={f.accountName}
+                    onChange={(e) => set('accountName', e.target.value)}
+                    placeholder="Avenzio Seven"
+                  />
+                </div>
+              </div>
+
+              <div className="av-field">
+                <label className="av-lab" htmlFor="mAccNum">
+                  Nomor rekening / ID
+                </label>
+                <input
+                  className="av-in"
+                  id="mAccNum"
+                  value={f.accountNumber}
+                  onChange={(e) => set('accountNumber', e.target.value)}
+                  placeholder="1234567890"
+                />
+              </div>
+
+              <div className="av-field">
+                <label className="av-lab" htmlFor="mNotes">
+                  Catatan untuk pelanggan
+                </label>
+                <textarea
+                  className="av-in"
+                  id="mNotes"
+                  value={f.notes}
+                  onChange={(e) => set('notes', e.target.value)}
+                  placeholder="Konfirmasi bukti transfer ke WhatsApp CS."
+                />
+              </div>
+
+              <ImageUpload
+                id="mImage"
+                label="Foto (opsional)"
+                value={f.image}
+                onChange={(img) => set('image', img)}
+                hint="JPG / PNG / WEBP, maks 2MB."
+              />
+            </>
+          )}
 
           <label className="av-check">
             <input type="checkbox" checked={f.active} onChange={(e) => set('active', e.target.checked)} />
@@ -292,11 +347,20 @@ export default function MethodsPanel() {
                   )}
                   <div>
                     <b>{m.name}</b>
-                    <span>
-                      {m.accountName}
-                      {m.accountNumber ? ' · ' + m.accountNumber : ''}
-                    </span>
-                    <span>{m.notes}</span>
+                    {/qris/i.test(m.name || '') ? (
+                      <span>Metode pembayaran QRIS</span>
+                    ) : (
+                      <>
+                        <span>
+                          {m.accountName}
+                          {m.accountNumber ? ' · ' + m.accountNumber : ''}
+                        </span>
+                        <span>{m.notes}</span>
+                      </>
+                    )}
+                    {/qris/i.test(m.name || '') && m.active && !m.image ? (
+                      <span className="av-warn">Foto QRIS belum ada</span>
+                    ) : null}
                   </div>
                 </div>
                 <div className="av-actions" style={{ marginTop: 0 }}>

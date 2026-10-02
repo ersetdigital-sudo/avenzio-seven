@@ -737,8 +737,24 @@ html{overflow-x:clip}
 
 /* Foto produk dari admin (Cloudinary) */
 .apc-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;margin:0 0 14px;background:var(--cream);display:block}
-.pay-qrimg{width:100%;max-width:250px;border-radius:14px;display:block;margin:0 auto}
-.ps-qrimg{width:min(250px,72%);border-radius:14px;display:block;margin:0 auto 10px}
+.pay-qrimg{width:100%;max-width:280px;height:auto;object-fit:contain;border-radius:14px;display:block;margin:0 auto}
+.ps-qrimg{width:min(300px,86%);max-height:340px;height:auto;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:14px;display:block;margin:0 auto 10px;padding:8px}
+
+/* Pilih metode pembayaran di checkout (data dari Supabase) */
+.ps-pm{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.ps-pm-t{font-size:11.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.ps-pm-o{display:flex;align-items:center;gap:10px;padding:12px 13px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink);background:#fff;transition:border-color .15s ease,background .15s ease}
+.ps-pm-o:last-of-type{margin-bottom:0}
+.ps-pm-o input{accent-color:var(--plum);width:17px;height:17px;margin:0;flex-shrink:0}
+.ps-pm-o:has(input:checked){border-color:var(--plum);background:#FBF5F9;box-shadow:inset 0 0 0 1px var(--plum)}
+.ps-pm-tag{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 8px;margin-left:auto;flex-shrink:0}
+.ps-pm-empty{margin:0;font-size:13.5px;color:var(--muted);line-height:1.55}
+.ps-pm-note{font-size:13px!important;color:var(--muted)}
+.ps-acc{display:flex;flex-direction:column;gap:3px;background:var(--cream);border:1px dashed var(--line);border-radius:10px;padding:11px 13px;margin:10px 0 0;font-size:14px;text-align:left}
+.ps-acc b{color:var(--plum)}
+.ps-acc span{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;color:var(--ink)}
+.pay-qrmiss{margin:0;font-size:14px;color:var(--muted);background:var(--cream);border:1px dashed var(--line);border-radius:12px;padding:16px;text-align:center;line-height:1.55}
+@media(max-width:640px){.ps-pm{padding:12px}.ps-qrimg{width:min(300px,92%)}}
 .pd-photo{width:112px;height:112px;object-fit:cover;border-radius:16px;border:1px solid var(--line);display:block;flex-shrink:0;background:var(--cream)}@media(max-width:640px){.pd-photo{width:84px;height:84px}}
 
 /* Metode pembayaran dari admin */

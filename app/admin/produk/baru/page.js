@@ -7,10 +7,6 @@ export default function NewProductPage() {
     <>
       <div className="av-hd">
         <div>
-          <div className="aeye">
-            <i />
-            Katalog
-          </div>
           <h1>Tambah produk</h1>
           <p>Isi detail produk, harga otomatis terformat Rupiah.</p>
         </div>

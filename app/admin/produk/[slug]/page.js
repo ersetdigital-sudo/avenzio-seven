@@ -19,10 +19,6 @@ export default async function EditProductPage({ params }) {
     <>
       <div className="av-hd">
         <div>
-          <div className="aeye">
-            <i />
-            Katalog
-          </div>
           <h1>Edit produk</h1>
           <p>{item.title}</p>
         </div>

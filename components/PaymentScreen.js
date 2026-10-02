@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { fmtClock, rp } from '@/lib/format';
 import { getLast, getOrder, saveOrder } from '@/lib/orders';
 import { pushStatus } from '@/lib/orderSync';
-import { qrPayment } from '@/lib/qr';
 import { useQris } from '@/lib/useQris';
 import { useProducts } from './ProductsProvider';
 
@@ -198,9 +197,12 @@ export default function PaymentScreen() {
               <div className="pay-qrbox">
                 <div className="pay-qrlab">QRIS</div>
                 {qris ? (
-                  <img className="pay-qrimg" src={qris} alt="QRIS" width="250" height="250" />
+                  <img className="pay-qrimg" src={qris} alt="Foto QRIS" width="320" height="320" />
                 ) : (
-                  <div dangerouslySetInnerHTML={{ __html: qrPayment(order.inv) }} />
+                  <p className="pay-qrmiss">
+                    Foto QRIS belum dikonfigurasi admin. Hubungi CS untuk opsi pembayaran
+                    lainnya.
+                  </p>
                 )}
               </div>
               <p>
@@ -236,7 +238,7 @@ export default function PaymentScreen() {
               </div>
               <div>
                 <dt>Metode</dt>
-                <dd>QRIS</dd>
+                <dd>{order.method || 'QRIS'}</dd>
               </div>
             </dl>
             <div className="pay-note">

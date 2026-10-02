@@ -28,10 +28,6 @@ export default async function AdminHome() {
     <>
       <div className="av-hd">
         <div>
-          <div className="aeye">
-            <i />
-            Ikhtisar
-          </div>
           <h1>Dashboard</h1>
           <p>Pantau pesanan WhatsApp, produk, dan metode pembayaran.</p>
         </div>
