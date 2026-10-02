@@ -2,18 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  BY_SLUG,
   CATS,
   CATS_WITH_PRODUCTS,
   FIELDS,
   PHONE_CATS,
   PHONE_PREFIX,
-  PRODUCTS,
   PROVS,
 } from '@/lib/catalog';
 import { rp } from '@/lib/format';
 import { newPpobInvoice, saveOrder, setLast } from '@/lib/orders';
+import { pushOrder } from '@/lib/orderSync';
 import { PpLogo } from './Logo';
+import { useProducts } from './ProductsProvider';
 import PpobPayScreen from './PpobPayScreen';
 
 function detectProv(num) {
@@ -24,9 +24,9 @@ function detectProv(num) {
   return null;
 }
 
-function providerList(cat) {
+function providerList(list, cat) {
   const out = [];
-  PRODUCTS.forEach((p) => {
+  list.forEach((p) => {
     if (p.cat === cat && out.indexOf(p.prov) < 0) out.push(p.prov);
   });
   return out;
@@ -38,11 +38,12 @@ function providerList(cat) {
  */
 export default function PpobForm({ init = {} }) {
   const cats = CATS_WITH_PRODUCTS;
+  const { products, bySlug } = useProducts();
 
   // Initial state is derived once per mount; parents remount with a new `key`
   // when they want to reopen the widget with different params.
   const start = useMemo(() => {
-    const p = init.p ? BY_SLUG[init.p] : null;
+    const p = init.p ? bySlug[init.p] : null;
     const cat = p
       ? p.cat
       : init.cat && cats.indexOf(init.cat) > -1
@@ -52,7 +53,7 @@ export default function PpobForm({ init = {} }) {
       cat,
       to: String(init.to || '').replace(/\D/g, ''),
       prov: p ? p.prov : null,
-      sel: p ? init.p : null,
+      sel: init.p || null,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -81,7 +82,7 @@ export default function PpobForm({ init = {} }) {
   const phoneCat = !!PHONE_CATS[cat];
   const valid = new RegExp(field[2]).test(to);
 
-  const pv = phoneCat ? [] : providerList(cat);
+  const pv = phoneCat ? [] : providerList(products, cat);
   const activeProv = phoneCat
     ? detectProv(to)
     : prov && pv.indexOf(prov) > -1
@@ -91,13 +92,13 @@ export default function PpobForm({ init = {} }) {
   const items = useMemo(() => {
     if (phoneCat) {
       return activeProv
-        ? PRODUCTS.filter((p) => p.cat === cat && p.prov === activeProv)
+        ? products.filter((p) => p.cat === cat && p.prov === activeProv)
         : [];
     }
-    return PRODUCTS.filter((p) => p.cat === cat && p.prov === activeProv);
-  }, [cat, activeProv, phoneCat]);
+    return products.filter((p) => p.cat === cat && p.prov === activeProv);
+  }, [products, cat, activeProv, phoneCat]);
 
-  const sp = items.find((p) => p.slug === sel) || null;
+  const sp = items.find((p) => p.slug === sel) || bySlug[sel] || null;
 
   function startPayment(product) {
     const inv = newPpobInvoice();
@@ -111,6 +112,16 @@ export default function PpobForm({ init = {} }) {
       expires: exp,
       status: 'menunggu',
     });
+    pushOrder({
+      inv,
+      slug: product.slug,
+      title: product.title,
+      to,
+      total: product.price,
+      status: 'menunggu',
+      method: 'QRIS',
+      expires: exp,
+    });
     setLast(inv);
     setPay({ inv, exp, slug: product.slug });
   }
@@ -119,13 +130,13 @@ export default function PpobForm({ init = {} }) {
   const launched = useRef(false);
   useEffect(() => {
     if (launched.current || !init.pay) return;
-    launched.current = true;
     const selected = items.find((p) => p.slug === sel);
     if (selected && valid && (!phoneCat || detectProv(to) === selected.prov)) {
+      launched.current = true;
       startPayment(selected);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [items, sel, valid, phoneCat, to]);
 
   function selectCat(next) {
     if (next === cat) return;

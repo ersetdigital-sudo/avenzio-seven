@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CATS, FIELDS, PROVS } from '@/lib/catalog';
 import { rp } from '@/lib/format';
+import { cld } from '@/lib/cloudinary';
 import { setPending } from '@/lib/orders';
 import PpobForm from './PpobForm';
 
@@ -74,6 +75,16 @@ export default function ProductView({ product }) {
         <div className="pd-hero">
           <div className="pd-hero-row">
             <div className="pd-id">
+              {product.image ? (
+                <img
+                  className="pd-photo"
+                  src={cld(product.image, { w: 320 })}
+                  alt={product.title}
+                  width="112"
+                  height="112"
+                  loading="lazy"
+                />
+              ) : null}
               <span className="pd-logobadge">
                 <span className="pd-logo" style={{ background: v[2], color: v[3] }}>
                   {v[1]}

@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BY_SLUG, FIELDS, PHONE_CATS } from '@/lib/catalog';
+import { FIELDS, PHONE_CATS } from '@/lib/catalog';
 import { fmtClock, rp } from '@/lib/format';
 import { getOrder, newPpobInvoice, saveOrder, setLast } from '@/lib/orders';
+import { pushOrder, pushStatus } from '@/lib/orderSync';
 import { qrPpob } from '@/lib/qr';
+import { useQris } from '@/lib/useQris';
 import { PpLogo } from './Logo';
+import { useProducts } from './ProductsProvider';
 
 /**
  * Full-screen QRIS payment overlay used by the PPOB widget (legacy `#payScr`).
@@ -14,7 +17,9 @@ import { PpLogo } from './Logo';
  */
 export default function PpobPayScreen({ inv, exp, slug, to, onClose }) {
   const router = useRouter();
-  const product = BY_SLUG[slug];
+  const { bySlug } = useProducts();
+  const product = bySlug[slug];
+  const qris = useQris();
 
   const [curInv, setCurInv] = useState(inv);
   const [curExp, setCurExp] = useState(exp);
@@ -52,9 +57,10 @@ export default function PpobPayScreen({ inv, exp, slug, to, onClose }) {
     if (existing) {
       existing.status = st;
       saveOrder(existing);
+      pushStatus(curInv, st);
       return;
     }
-    saveOrder({
+    const fresh = {
       inv: curInv,
       slug,
       to,
@@ -62,7 +68,9 @@ export default function PpobPayScreen({ inv, exp, slug, to, onClose }) {
       created: Date.now(),
       expires: curExp,
       status: st,
-    });
+    };
+    saveOrder(fresh);
+    pushOrder({ ...fresh, title: product.title, method: 'QRIS' });
   }
 
   function close() {
@@ -83,6 +91,16 @@ export default function PpobPayScreen({ inv, exp, slug, to, onClose }) {
       created: Date.now(),
       expires: nextExp,
       status: 'menunggu',
+    });
+    pushOrder({
+      inv: nextInv,
+      slug,
+      title: product.title,
+      to,
+      total: product.price,
+      status: 'menunggu',
+      method: 'QRIS',
+      expires: nextExp,
     });
     setLast(nextInv);
     setCurInv(nextInv);
@@ -142,7 +160,11 @@ export default function PpobPayScreen({ inv, exp, slug, to, onClose }) {
         </div>
         <div className="ps-qr">
           <div className="ps-qrlab">QRIS</div>
-          <span dangerouslySetInnerHTML={{ __html: qrPpob(curInv) }} />
+          {qris ? (
+            <img className="ps-qrimg" src={qris} alt="QRIS" width="250" height="250" />
+          ) : (
+            <span dangerouslySetInnerHTML={{ __html: qrPpob(curInv) }} />
+          )}
           <p>Scan QRIS menggunakan mobile banking atau e-wallet.</p>
         </div>
         <div className="ps-st wait">

@@ -1,16 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { BY_SLUG } from '@/lib/catalog';
+import { useEffect, useRef, useState } from 'react';
 import { dt, rp } from '@/lib/format';
 import { ORDER_STATUS, getOrder } from '@/lib/orders';
+import { fetchRemoteOrder } from '@/lib/orderSync';
 import { wa } from '@/lib/site';
+import { useProducts } from './ProductsProvider';
 
 /** Invoice lookup (legacy `/cek-pesanan`). */
 export default function CekPesananForm() {
+  const { bySlug } = useProducts();
   const [inv, setInv] = useState('');
   const [result, setResult] = useState(null);
+  const pending = useRef(0);
 
   function look(value) {
     const v = String(value || '').trim().toUpperCase();
@@ -18,8 +21,17 @@ export default function CekPesananForm() {
       setResult({ kind: 'empty' });
       return;
     }
-    const order = getOrder(v);
-    setResult(order ? { kind: 'found', v, order } : { kind: 'nf', v });
+    const local = getOrder(v);
+    if (local) {
+      setResult({ kind: 'found', v, order: local });
+      return;
+    }
+    const ticket = ++pending.current;
+    setResult({ kind: 'loading', v });
+    fetchRemoteOrder(v).then((o) => {
+      if (ticket !== pending.current) return;
+      setResult(o ? { kind: 'found', v, order: o } : { kind: 'nf', v });
+    });
   }
 
   useEffect(() => {
@@ -70,9 +82,17 @@ export default function CekPesananForm() {
         </a>
       </div>
     );
+  } else if (result && result.kind === 'loading') {
+    out = (
+      <div className="aempty">
+        <b>Mencari invoice…</b>
+        <p>Sebentar ya, kami sedang memeriksa data pesanan.</p>
+      </div>
+    );
   } else if (result && result.kind === 'found') {
     const o = result.order;
-    const p = BY_SLUG[o.slug];
+    const p = bySlug[o.slug];
+    const productTitle = p ? p.title : o.title || o.slug;
     out = (
       <div className="abox">
         <div className="tx-head">
@@ -85,11 +105,11 @@ export default function CekPesananForm() {
         <dl className="adl">
           <div>
             <dt>Produk</dt>
-            <dd>{p ? p.title : o.slug}</dd>
+            <dd>{productTitle}</dd>
           </div>
           <div>
             <dt>Nominal</dt>
-            <dd>{p ? p.nominal : '-'}</dd>
+            <dd>{p && p.nominal ? p.nominal : '-'}</dd>
           </div>
           <div>
             <dt>Nomor tujuan</dt>

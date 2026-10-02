@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import PpobLink from '@/components/PpobLink';
+import { cld } from '@/lib/cloudinary';
+import { listMethods } from '@/lib/server/db';
 
 export const metadata = { title: 'Panduan Pembayaran' };
+export const revalidate = 60;
 
 const STEPS = [
   {
@@ -36,7 +39,14 @@ const STEPS = [
   },
 ];
 
-export default function PanduanPembayaranPage() {
+export default async function PanduanPembayaranPage() {
+  let methods = [];
+  try {
+    methods = await listMethods();
+  } catch {
+    methods = [];
+  }
+
   return (
     <>
       <section className="aph">
@@ -77,6 +87,36 @@ export default function PanduanPembayaranPage() {
             </li>
           ))}
         </ol>
+
+        {methods.length ? (
+          <>
+            <div className="aeye" style={{ marginTop: 30 }}>
+              <i />
+              Metode Pembayaran
+            </div>
+            <div className="paymethods">
+              {methods.map((m) => (
+                <div className="paymethod" key={m.id}>
+                  {m.image ? (
+                    <img
+                      src={cld(m.image, { w: 460 })}
+                      alt={'QRIS ' + m.name}
+                      width="230"
+                      height="230"
+                      loading="lazy"
+                    />
+                  ) : null}
+                  <b>{m.name}</b>
+                  <span>
+                    {m.accountName}
+                    {m.accountNumber ? ' · ' + m.accountNumber : ''}
+                  </span>
+                  {m.notes ? <p>{m.notes}</p> : null}
+                </div>
+              ))}
+            </div>
+          </>
+        ) : null}
 
         <div className="abox faq-cta">
           <div>

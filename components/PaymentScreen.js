@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BY_SLUG } from '@/lib/catalog';
 import { fmtClock, rp } from '@/lib/format';
 import { getLast, getOrder, saveOrder } from '@/lib/orders';
+import { pushStatus } from '@/lib/orderSync';
 import { qrPayment } from '@/lib/qr';
+import { useQris } from '@/lib/useQris';
+import { useProducts } from './ProductsProvider';
 
 const LABEL = {
   menunggu: 'Menunggu Pembayaran',
@@ -18,6 +20,8 @@ const LABEL = {
 /** QRIS payment page (legacy `/pembayaran`) — preview + manual status simulation. */
 export default function PaymentScreen() {
   const router = useRouter();
+  const { bySlug } = useProducts();
+  const qris = useQris();
   const [invoice, setInvoice] = useState('');
   const [order, setOrder] = useState(null);
   const [ready, setReady] = useState(false);
@@ -45,7 +49,10 @@ export default function PaymentScreen() {
   useEffect(() => {
     if (!invoice) return;
     const fresh = getOrder(invoice);
-    if (fresh && (!order || fresh.status !== order.status)) setOrder(fresh);
+    if (fresh && (!order || fresh.status !== order.status)) {
+      setOrder(fresh);
+      if (order && fresh.status !== order.status) pushStatus(invoice, fresh.status);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now, invoice]);
 
@@ -74,6 +81,7 @@ export default function PaymentScreen() {
       o.status = 'gagal';
       o.cancelled = true;
     });
+    pushStatus(invoice, 'gagal');
   }
 
   function simulate(status) {
@@ -81,12 +89,13 @@ export default function PaymentScreen() {
       o.status = status;
       if (status === 'berhasil') o.paidAt = Date.now();
     });
+    pushStatus(invoice, status);
     if (status === 'berhasil') {
       router.push('/checkout/sukses?invoice=' + invoice + '#invoice=' + invoice);
     }
   }
 
-  const product = order ? BY_SLUG[order.slug] : null;
+  const product = order ? bySlug[order.slug] : null;
   const left = order ? Math.max(0, order.expires - now) : 0;
   const timerText = order
     ? 'Bayar sebelum ' +
@@ -188,7 +197,11 @@ export default function PaymentScreen() {
             <div className={'pay-qr' + (live ? '' : ' dim')}>
               <div className="pay-qrbox">
                 <div className="pay-qrlab">QRIS</div>
-                <div dangerouslySetInnerHTML={{ __html: qrPayment(order.inv) }} />
+                {qris ? (
+                  <img className="pay-qrimg" src={qris} alt="QRIS" width="250" height="250" />
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: qrPayment(order.inv) }} />
+                )}
               </div>
               <p>
                 Scan QRIS menggunakan aplikasi

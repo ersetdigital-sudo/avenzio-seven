@@ -734,3 +734,17 @@ html{overflow-x:clip}
 .kt-l{color:#3D0B37}
 @media (max-width:767px){.kt-i{width:46px;height:46px;border-radius:14px}.kt-i svg{width:23px;height:23px}}
 .bs-hd{z-index:5}.bs-x{position:relative;z-index:6;touch-action:manipulation}.bs-ov{cursor:pointer}
+
+/* Foto produk dari admin (Cloudinary) */
+.apc-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;margin:0 0 14px;background:var(--cream);display:block}
+.pay-qrimg{width:100%;max-width:250px;border-radius:14px;display:block;margin:0 auto}
+.ps-qrimg{width:min(250px,72%);border-radius:14px;display:block;margin:0 auto 10px}
+.pd-photo{width:112px;height:112px;object-fit:cover;border-radius:16px;border:1px solid var(--line);display:block;flex-shrink:0;background:var(--cream)}@media(max-width:640px){.pd-photo{width:84px;height:84px}}
+
+/* Metode pembayaran dari admin */
+.paymethods{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin:22px 0 6px}
+.paymethod{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}
+.paymethod img{width:100%;max-width:230px;border-radius:12px;display:block;margin-bottom:12px;background:var(--cream)}
+.paymethod b{display:block;font-size:16.5px;color:var(--plum)}
+.paymethod span{font-size:13.5px;color:var(--muted);display:block;margin-top:2px}
+.paymethod p{font-size:13.5px;margin:10px 0 0}

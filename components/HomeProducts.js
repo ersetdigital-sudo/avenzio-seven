@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BY_SLUG, PRODUCTS } from '@/lib/catalog';
+import { useProducts } from './ProductsProvider';
 import ProductCard from './ProductCard';
 
 const TABS = [
@@ -21,12 +21,17 @@ const FEATURED = [
 
 /** "Paling sering dibeli" grid with provider filter tabs. */
 export default function HomeProducts() {
+  const { products, bySlug } = useProducts();
   const [filter, setFilter] = useState('all');
 
+  const featured = products.filter((p) => p.featured);
   const list =
     filter === 'all'
-      ? FEATURED.map((s) => BY_SLUG[s]).filter(Boolean)
-      : PRODUCTS.filter((p) => p.prov === filter).slice(0, 4);
+      ? (featured.length
+          ? featured
+          : FEATURED.map((s) => bySlug[s]).filter(Boolean)
+        ).slice(0, 4)
+      : products.filter((p) => p.prov === filter).slice(0, 4);
 
   return (
     <>

@@ -7,6 +7,7 @@ import './styles/buysheet.css';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import BottomNav from '@/components/BottomNav';
+import { ProductsProvider } from '@/components/ProductsProvider';
 
 export const metadata = {
   applicationName: 'Avenzio Seven',
@@ -28,7 +29,9 @@ export default function RootLayout({ children }) {
     <html lang="id">
       <body>
         <SiteHeader />
-        <main id="main">{children}</main>
+        <main id="main">
+          <ProductsProvider>{children}</ProductsProvider>
+        </main>
         <SiteFooter />
         <BottomNav />
       </body>
