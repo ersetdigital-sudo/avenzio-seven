@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { rp } from '@/lib/format';
-import { cld } from '@/lib/cloudinary';
 
 export default function ProductList() {
   const [items, setItems] = useState(null);
@@ -115,7 +114,6 @@ export default function ProductList() {
             <table className="av-table">
               <thead>
                 <tr>
-                  <th>Foto</th>
                   <th>Produk</th>
                   <th>Kategori</th>
                   <th>Harga</th>
@@ -126,18 +124,6 @@ export default function ProductList() {
               <tbody>
                 {list.map((p) => (
                   <tr key={p.slug}>
-                    <td>
-                      {p.image ? (
-                        <img
-                          className="av-thumb"
-                          src={cld(p.image, { w: 128 })}
-                          alt={p.title}
-                          loading="lazy"
-                        />
-                      ) : (
-                        <span className="av-thumb" aria-hidden="true" />
-                      )}
-                    </td>
                     <td>
                       <div style={{ fontWeight: 700 }}>{p.title}</div>
                       <div className="muted">/{p.slug}</div>
